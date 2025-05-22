@@ -15,6 +15,12 @@ struct OpenCropperOptions: Record {
 
   @Field
   var compressImageQuality: Float = 1.0
+
+  @Field
+  var rotationEnabled: Bool = true
+
+  @Field
+  var rotationControlEnabled: Bool = true
 }
 
 struct OpenCropperResult: Record {

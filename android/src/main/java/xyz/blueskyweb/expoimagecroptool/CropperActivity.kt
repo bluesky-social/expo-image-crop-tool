@@ -136,6 +136,7 @@ class CropperActivity : AppCompatActivity() {
     val cancelBtn =
       AppCompatButton(this).apply {
         text = "Cancel"
+        layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).withMargin()
         setOnClickListener {
           setResult(RESULT_CANCELED)
           finish()
@@ -148,13 +149,16 @@ class CropperActivity : AppCompatActivity() {
         text = "Reset"
         layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).withMargin()
         setOnClickListener {
-          cropView.rotateImage(-1 * prevRotation)
+          if (options?.rotationEnabled != false && prevRotation != 0) {
+            cropView.rotateImage(-1 * prevRotation)
+            prevRotation = 0
+          }
           cropView.resetCropRect()
-          prevRotation = 0
         }
       }
     bar.addView(resetBtn)
 
+    if (options.rotationEnabled != false) {
     val rotateBtn =
       AppCompatButton(this).apply {
         text = "Rotate"
@@ -164,7 +168,8 @@ class CropperActivity : AppCompatActivity() {
           prevRotation = (prevRotation + 90) % 360
         }
       }
-    bar.addView(rotateBtn)
+      bar.addView(rotateBtn)
+    }
 
     val doneBtn =
       AppCompatButton(this).apply {
@@ -205,7 +210,7 @@ class CropperActivity : AppCompatActivity() {
   fun onDone() {
     var bmap = cropView?.getCroppedImage() ?: return
 
-    if (prevRotation != 0) {
+    if (options?.rotationEnabled != false &&prevRotation != 0) {
       bmap = bmap.rotate(prevRotation.toFloat())
     }
 

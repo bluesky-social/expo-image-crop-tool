@@ -22,9 +22,9 @@ pod install
 
 For basic examples, see `example/App.tsx`.
 
-## `openCropper(options: OpenCropperOptions) => Promise<OpenCropperResult>`
+## `openCropperAsync(options: OpenCropperOptions) => Promise<OpenCropperResult>`
 
-`openCropper` will return the path to the cropped image, or will throw an error if something goes wrong.
+`openCropperAsync` will return the path to the cropped image, or will throw an error if something goes wrong.
 
 ## `OpenCropperOptions`
 
@@ -46,7 +46,15 @@ The format of the output image. Default is `png`.
 
 ### `compressImageQuality?: number`
 
-If outputing a JPEG image, the compression quality for the output image.
+If outputting a JPEG image, the compression quality for the output image.
+
+### `rotationEnabled?: boolean`
+
+Whether or not to allow the user to rotate the image in 90 degree segments. Default is `true`.
+
+### `rotationControlEnabled?: boolean`
+
+Whether or not to show the rotation control view. Default is `true` (iOS ONLY).
 
 ## `OpenCropperResult`
 

@@ -10,6 +10,7 @@ class OpenCropperOptions(
   @Field var aspectRatio: Double? = null,
   @Field var format: String? = null,
   @Field var compressImageQuality: Double? = null,
+  @Field var rotationEnabled: Boolean? = true,
 ) : Record {
   fun toBundle(): Bundle =
     Bundle().apply {
@@ -18,6 +19,7 @@ class OpenCropperOptions(
       putDouble("aspectRatio", aspectRatio ?: 0.0)
       putString("format", format)
       putDouble("compressImageQuality", compressImageQuality ?: 1.0)
+      putBoolean("rotationEnabled", rotationEnabled ?: true)
     }
 
   companion object {
@@ -28,6 +30,7 @@ class OpenCropperOptions(
         aspectRatio = bundle.getDouble("aspectRatio"),
         format = bundle.getString("format"),
         compressImageQuality = bundle.getDouble("compressImageQuality"),
+        rotationEnabled = bundle.getBoolean("rotationEnabled", true)
       )
   }
 }

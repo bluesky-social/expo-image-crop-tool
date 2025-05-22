@@ -35,7 +35,10 @@ class Cropper: NSObject, CropViewControllerDelegate {
   var onCrop: ((OpenCropperResult) -> Void)!
   var onError: ((Error) -> Void)!
 
-  init(options: OpenCropperOptions, onCrop: @escaping(OpenCropperResult) -> Void, onError: @escaping(Error) -> Void) throws {
+  init(
+    options: OpenCropperOptions, onCrop: @escaping (OpenCropperResult) -> Void,
+    onError: @escaping (Error) -> Void
+  ) throws {
     super.init()
 
     guard let image = UIImage(contentsOfFile: options.imageUri.deletingPrefix("file://")) else {
@@ -57,6 +60,29 @@ class Cropper: NSObject, CropViewControllerDelegate {
     }
 
     var viewConfig = Mantis.CropViewConfig()
+
+    if options.rotationControlEnabled == false {
+      // Disable rotation control view if rotationControlEnabled is false
+      viewConfig.showAttachedRotationControlView = false
+    }
+
+    // Disable rotation control view if rotationEnabled is false
+    if options.rotationEnabled == false {
+      // Create a toolbar config with rotation buttons removed
+      var toolbarConfig = Mantis.CropToolbarConfig()
+
+      // Get the default options and remove rotation options
+      var buttonOptions = toolbarConfig.toolbarButtonOptions
+      buttonOptions.remove(.clockwiseRotate)
+      buttonOptions.remove(.counterclockwiseRotate)
+
+      // Set the modified options back
+      toolbarConfig.toolbarButtonOptions = buttonOptions
+
+      // Assign the toolbar config to the main config
+      config.cropToolbarConfig = toolbarConfig
+    }
+
     if options.shape == "circle" {
       config.ratioOptions = []
       viewConfig.cropShapeType = .circle(maskOnly: true)
@@ -70,7 +96,10 @@ class Cropper: NSObject, CropViewControllerDelegate {
     self.cropVc = cropVc
   }
 
-  public func cropViewControllerDidCrop(_ cropViewController: Mantis.CropViewController, cropped: UIImage, transformation: Mantis.Transformation, cropInfo: Mantis.CropInfo) {
+  public func cropViewControllerDidCrop(
+    _ cropViewController: Mantis.CropViewController, cropped: UIImage,
+    transformation: Mantis.Transformation, cropInfo: Mantis.CropInfo
+  ) {
     var data: Data?
 
     if self.options.format == "jpeg" {
@@ -109,7 +138,9 @@ class Cropper: NSObject, CropViewControllerDelegate {
     cropViewController.dismiss(animated: true)
   }
 
-  public func cropViewControllerDidCancel(_ cropViewController: Mantis.CropViewController, original: UIImage) {
+  public func cropViewControllerDidCancel(
+    _ cropViewController: Mantis.CropViewController, original: UIImage
+  ) {
     cropViewController.dismiss(animated: true)
     self.onError(CropperError.cancelled)
   }
@@ -130,7 +161,8 @@ class Cropper: NSObject, CropViewControllerDelegate {
 
   private static func getTempUrl(ext: String) -> URL? {
     let dir = FileManager().temporaryDirectory
-    return URL(string: "\(dir.absoluteString)\(ProcessInfo.processInfo.globallyUniqueString).\(ext)")!
+    return URL(
+      string: "\(dir.absoluteString)\(ProcessInfo.processInfo.globallyUniqueString).\(ext)")!
   }
 }
 
