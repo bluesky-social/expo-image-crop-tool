@@ -28,52 +28,24 @@ For basic examples, see `example/App.tsx`.
 
 ## `OpenCropperOptions`
 
-### `imageUri: string`
+| Key | Type | iOS | Android | Description |
+|-----|------|-----|---------|-------------|
+| `imageUri` | `string` | ✅ | ✅ | A path to the image that you want to crop. |
+| `shape` | `string` | ✅ | ✅ | The shape that you want the returned image to be (`'rectangle'` \| `'circle'`). Default is `rectangle`. |
+| `aspectRatio` | `number` | ✅ | ✅ | If you want to force a particular aspect ratio for the output image. |
+| `format` | `string` | ✅ | ✅ | The format of the output image (`'png'` \| `'jpeg'`). Default is `png`. |
+| `compressImageQuality` | `number` | ✅ | ✅ | If outputting a JPEG image, the compression quality for the output image. |
+| `rotationEnabled` | `boolean` | ✅ | ✅ | Whether or not to allow the user to rotate the image in 90 degree segments. Default is `true`. |
+| `rotationControlEnabled` | `boolean` | ✅ |  | Whether or not to show the rotation control view. Default is `true`. |
 
-A path to the image that you want to crop.
-
-### `shape?: 'rectangle' | 'circle'`
-
-The shape that you want the returned image to be. Default is `rectangle`.
-
-### `aspectRatio?: number`
-
-If you want to force a particular aspect ratio for the output image.
-
-### `format?: 'png' | 'jpeg'`
-
-The format of the output image. Default is `png`.
-
-### `compressImageQuality?: number`
-
-If outputting a JPEG image, the compression quality for the output image.
-
-### `rotationEnabled?: boolean`
-
-Whether or not to allow the user to rotate the image in 90 degree segments. Default is `true`.
-
-### `rotationControlEnabled?: boolean`
-
-Whether or not to show the rotation control view. Default is `true` (iOS ONLY).
 
 ## `OpenCropperResult`
 
-### `path: string`
+| Key | Type | Description |
+|-----|------|-------------|
+| `path` | `string` | Path of the output image |
+| `size` | `number` | Size in bytes of the output image |
+| `width` | `number` | Width of the output image |
+| `height` | `number` | Height of the output image |
+| `mimeType` | `string` | MIME type of the output image |
 
-Path of the output image
-
-### `size: number`
-
-Size in bytes of the output image
-
-### `width: number`
-
-Width of the output image
-
-### `height: number`
-
-Height of the output image
-
-### `mimeType: string`
-
-MIME type of the output image
