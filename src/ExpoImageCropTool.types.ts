@@ -10,7 +10,7 @@ export interface OpenCropperOptions {
 
 export interface OpenCropperResult {
   path: string;
-  mime: string;
+  mimeType: string;
   size: number;
   width: number;
   height: number;
