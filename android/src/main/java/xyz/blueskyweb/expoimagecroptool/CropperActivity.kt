@@ -127,7 +127,7 @@ class CropperActivity : AppCompatActivity() {
 
     val cancelBtn =
             AppCompatButton(this).apply {
-              text = "CANCEL"
+              text = options.cancelButtonText ?: "CANCEL"
               setTextColor(Color.WHITE)
               setBackgroundColor(Color.TRANSPARENT) // Transparent background
               layoutParams =
@@ -219,7 +219,7 @@ class CropperActivity : AppCompatActivity() {
     // Done button (right-aligned)
     val doneBtn =
             AppCompatButton(this).apply {
-              text = "DONE"
+              text = options.doneButtonText ?: "DONE"
               setTextColor(Color.YELLOW)
               setBackgroundColor(Color.TRANSPARENT) // Transparent background
               layoutParams =
