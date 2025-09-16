@@ -98,9 +98,6 @@ class Cropper: NSObject, CropViewControllerDelegate {
     cropVc.delegate = self
     cropVc.modalPresentationStyle = .fullScreen
     self.cropVc = cropVc
-    
-    // Store custom button text for later use
-    // We'll apply these after the view controller is presented
   }
 
   public func cropViewControllerDidCrop(
@@ -163,32 +160,32 @@ class Cropper: NSObject, CropViewControllerDelegate {
 
     // Apply custom button text if provided
     if options.cancelButtonText != nil || options.doneButtonText != nil {
-      _ = cropVc.view // Force view to load
+      _ = cropVc.view  // Force view to load
       updateButtonTitles(in: cropVc.view)
-      
+
       // Delayed check for dynamically added buttons
       DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
         self.updateButtonTitles(in: self.cropVc.view)
       }
     }
-    
+
     DispatchQueue.main.async {
       rootVc.topmostViewController().present(cropVc, animated: true)
     }
   }
-  
+
   private func updateButtonTitles(in view: UIView) {
     for subview in view.subviews {
       if let button = subview as? UIButton {
         let title = button.title(for: .normal) ?? ""
-        
+
         if let cancelText = options.cancelButtonText, title == "Cancel" {
           button.setTitle(cancelText, for: .normal)
         } else if let doneText = options.doneButtonText, title == "Done" {
           button.setTitle(doneText, for: .normal)
         }
       }
-      
+
       // Recursively check subviews
       updateButtonTitles(in: subview)
     }
