@@ -6,6 +6,8 @@ export interface OpenCropperOptions {
   compressImageQuality?: number;
   rotationEnabled?: boolean;
   rotationControlEnabled?: boolean;
+  cancelButtonText?: string;
+  doneButtonText?: string;
 }
 
 export interface OpenCropperResult {

@@ -39,7 +39,7 @@ PODS:
     - ExpoModulesCore
   - ExpoFont (13.3.1):
     - ExpoModulesCore
-  - ExpoImageCropTool (0.1.0):
+  - ExpoImageCropTool (0.3.1):
     - ExpoModulesCore
     - Mantis
   - ExpoImagePicker (16.1.4):
@@ -1731,15 +1731,15 @@ PODS:
 DEPENDENCIES:
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
-  - EXConstants (from `../node_modules/expo-constants/ios`)
+  - EXConstants (from `../../node_modules/expo-constants/ios`)
   - EXImageLoader (from `../node_modules/expo-image-loader/ios`)
   - Expo (from `../node_modules/expo`)
-  - ExpoAsset (from `../node_modules/expo-asset/ios`)
-  - ExpoFileSystem (from `../node_modules/expo-file-system/ios`)
-  - ExpoFont (from `../node_modules/expo-font/ios`)
+  - ExpoAsset (from `../../node_modules/expo-asset/ios`)
+  - ExpoFileSystem (from `../../node_modules/expo-file-system/ios`)
+  - ExpoFont (from `../../node_modules/expo-font/ios`)
   - ExpoImageCropTool (from `../../ios`)
   - ExpoImagePicker (from `../node_modules/expo-image-picker/ios`)
-  - ExpoKeepAwake (from `../node_modules/expo-keep-awake/ios`)
+  - ExpoKeepAwake (from `../../node_modules/expo-keep-awake/ios`)
   - ExpoModulesCore (from `../node_modules/expo-modules-core`)
   - fast_float (from `../node_modules/react-native/third-party-podspecs/fast_float.podspec`)
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
@@ -1823,23 +1823,23 @@ EXTERNAL SOURCES:
   DoubleConversion:
     :podspec: "../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec"
   EXConstants:
-    :path: "../node_modules/expo-constants/ios"
+    :path: "../../node_modules/expo-constants/ios"
   EXImageLoader:
     :path: "../node_modules/expo-image-loader/ios"
   Expo:
     :path: "../node_modules/expo"
   ExpoAsset:
-    :path: "../node_modules/expo-asset/ios"
+    :path: "../../node_modules/expo-asset/ios"
   ExpoFileSystem:
-    :path: "../node_modules/expo-file-system/ios"
+    :path: "../../node_modules/expo-file-system/ios"
   ExpoFont:
-    :path: "../node_modules/expo-font/ios"
+    :path: "../../node_modules/expo-font/ios"
   ExpoImageCropTool:
     :path: "../../ios"
   ExpoImagePicker:
     :path: "../node_modules/expo-image-picker/ios"
   ExpoKeepAwake:
-    :path: "../node_modules/expo-keep-awake/ios"
+    :path: "../../node_modules/expo-keep-awake/ios"
   ExpoModulesCore:
     :path: "../node_modules/expo-modules-core"
   fast_float:
@@ -1989,7 +1989,7 @@ SPEC CHECKSUMS:
   ExpoAsset: cac9909bd4c502b54b87b4e7495121c1194b3c5b
   ExpoFileSystem: 3bd7e34a164a9093c23b5a7b690efab8138ebf8e
   ExpoFont: 312c73403bbd4f98e1d6a5330641a56292583cd2
-  ExpoImageCropTool: 14db6164ade5ff74fc68b6dfe641bf3a26f83762
+  ExpoImageCropTool: 197fa94db1b39b7ba5cbb7233fc11c88c3fb1874
   ExpoImagePicker: d2fff488a0738343a3cc21e98544ee9feafaa0e6
   ExpoKeepAwake: e8dedc115d9f6f24b153ccd2d1d8efcdfd68a527
   ExpoModulesCore: 0bf5158ae9fb71e575582a8a48dbd26ced42f306
@@ -2066,4 +2066,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 667443a52067efe6ffe4f0e77a80ac86fb827a26
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.16.2
