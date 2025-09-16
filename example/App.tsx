@@ -29,7 +29,7 @@ export default function App() {
       if (!perms?.canAskAgain) {
         Alert.alert(
           "Cannot Request Image Permissions",
-          "Unable to re-request image permissions. Please enable them in system preferences",
+          "Unable to re-request image permissions. Please enable them in system preferences"
         );
         return;
       }
@@ -112,6 +112,24 @@ export default function App() {
               aspectRatio: 9 / 16,
               format: "jpeg",
               compressImageQuality: 0.0002,
+            })
+          }
+        />
+        <Button
+          title="Custom Text: Save/Back"
+          onPress={() =>
+            doCrop({
+              doneButtonText: "Save",
+              cancelButtonText: "Back",
+            })
+          }
+        />
+        <Button
+          title="Custom Text: Apply/Discard"
+          onPress={() =>
+            doCrop({
+              doneButtonText: "Apply",
+              cancelButtonText: "Discard",
             })
           }
         />

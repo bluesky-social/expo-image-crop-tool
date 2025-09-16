@@ -21,6 +21,12 @@ struct OpenCropperOptions: Record {
 
   @Field
   var rotationControlEnabled: Bool = true
+
+  @Field
+  var cancelButtonText: String?
+
+  @Field
+  var doneButtonText: String?
 }
 
 struct OpenCropperResult: Record {
