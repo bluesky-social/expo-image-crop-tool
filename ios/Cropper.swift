@@ -60,6 +60,9 @@ class Cropper: NSObject, CropViewControllerDelegate {
     }
 
     var viewConfig = Mantis.CropViewConfig()
+    
+    // Keep crop box stationary when rotating image
+    viewConfig.rotateCropBoxFor90DegreeRotation = false
 
     if options.rotationControlEnabled == false {
       // Disable rotation control view if rotationControlEnabled is false
