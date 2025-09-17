@@ -137,7 +137,7 @@ class CropperActivity : AppCompatActivity() {
                         setMargins(dpToPx(16), 0, 0, 0) // Left margin only
                       }
               setOnClickListener {
-                setResult(RESULT_CANCELED)
+                setResult(CropperError.Cancelled.getResultCode(), null)
                 finish()
               }
             }
