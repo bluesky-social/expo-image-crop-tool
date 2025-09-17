@@ -38,6 +38,8 @@ private fun Context.dpToPx(dp: Int): Int =
 class CropperActivity : AppCompatActivity() {
   private var cropView: CropImageView? = null
   private var options: OpenCropperOptions? = null
+  private var resetBtn: AppCompatImageButton? = null
+  private var rotationCount: Int = 0
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -88,6 +90,12 @@ class CropperActivity : AppCompatActivity() {
                     setAspectRatio((it * 100).toInt(), 100)
                   }
                 }
+              }
+              
+              // Add listener for crop overlay changes
+              setOnSetCropOverlayReleasedListener {
+                // Show reset button when crop area is adjusted
+                resetBtn?.visibility = View.VISIBLE
               }
             }
 
@@ -160,13 +168,26 @@ class CropperActivity : AppCompatActivity() {
               // Set padding inside the button
               val padding = dpToPx(12)
               setPadding(padding, padding, padding, padding)
+              
+              // Initially hidden
+              visibility = View.GONE
 
               // Set the click listener
               setOnClickListener {
+                // Reset rotation
+                if (rotationCount % 4 != 0) {
+                  val rotationsToReset = (4 - (rotationCount % 4)) * 90
+                  cropView.rotateImage(rotationsToReset)
+                  rotationCount = 0
+                }
+                // Reset crop
                 cropView.resetCropRect()
+                // Hide reset button
+                visibility = View.GONE
               }
             }
-
+    
+    this.resetBtn = resetBtn
     bar.addView(resetBtn)
 
     if (options.rotationEnabled != false) {
@@ -195,6 +216,8 @@ class CropperActivity : AppCompatActivity() {
                 // Set the click listener
                 setOnClickListener {
                   cropView.rotateImage(90)
+                  rotationCount++
+                  resetBtn?.visibility = View.VISIBLE
                 }
               }
       bar.addView(rotateBtn)
