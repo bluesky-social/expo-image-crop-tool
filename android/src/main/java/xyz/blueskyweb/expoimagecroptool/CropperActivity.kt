@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
-import android.graphics.Matrix
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -35,16 +34,10 @@ private fun Context.dpToPx(dp: Int): Int =
                 )
                 .toInt()
 
-// https://gist.github.com/codeswimmer/858833?permalink_comment_id=2347183#gistcomment-2347183
-fun Bitmap.rotate(degrees: Float): Bitmap {
-  val matrix = Matrix().apply { postRotate(degrees) }
-  return Bitmap.createBitmap(this, 0, 0, width, height, matrix, true)
-}
 
 class CropperActivity : AppCompatActivity() {
   private var cropView: CropImageView? = null
   private var options: OpenCropperOptions? = null
-  private var prevRotation: Int = 0
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -170,10 +163,6 @@ class CropperActivity : AppCompatActivity() {
 
               // Set the click listener
               setOnClickListener {
-                if (options?.rotationEnabled != false && prevRotation != 0) {
-                  cropView.rotateImage(-1 * prevRotation)
-                  prevRotation = 0
-                }
                 cropView.resetCropRect()
               }
             }
@@ -206,7 +195,6 @@ class CropperActivity : AppCompatActivity() {
                 // Set the click listener
                 setOnClickListener {
                   cropView.rotateImage(90)
-                  prevRotation = (prevRotation + 90) % 360
                 }
               }
       bar.addView(rotateBtn)
@@ -259,11 +247,7 @@ class CropperActivity : AppCompatActivity() {
   }
 
   fun onDone() {
-    var bmap = cropView?.getCroppedImage() ?: return
-
-    if (options?.rotationEnabled != false && prevRotation != 0) {
-      bmap = bmap.rotate(prevRotation.toFloat())
-    }
+    val bmap = cropView?.getCroppedImage() ?: return
 
     val format = this.options?.format ?: "png"
     val tempFile = File.createTempFile("cropped_image", ".$format", cacheDir)
