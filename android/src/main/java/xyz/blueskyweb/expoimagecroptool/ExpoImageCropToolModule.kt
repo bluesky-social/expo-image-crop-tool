@@ -37,16 +37,17 @@ class ExpoImageCropToolModule : Module() {
         val promise = pendingPromise ?: return@OnActivityResult
         pendingPromise = null
 
-        if (event.resultCode == RESULT_OK) {
-          event.data?.extras?.let {
+        event.data?.extras?.let {
+          if (event.resultCode == RESULT_OK) {
             val result = OpenCropperResult.fromBundle(it)
             promise.resolve(result)
-          } ?: run {
-            promise.reject(CropperError.Arguments.toCodedException())
+          } else {
+            promise.reject(CropperError.fromResultCode(event.resultCode).toCodedException())
           }
-        } else {
-          // Error or cancellation - use result code to determine error
-          promise.reject(CropperError.fromResultCode(event.resultCode).toCodedException())
+        } ?: run {
+          promise.reject(
+            CropperError.Arguments.toCodedException(),
+          )
         }
       }
     }
