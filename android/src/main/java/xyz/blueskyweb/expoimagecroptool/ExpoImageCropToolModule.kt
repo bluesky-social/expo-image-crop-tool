@@ -14,41 +14,46 @@ class ExpoImageCropToolModule : Module() {
 
   private var pendingPromise: Promise? = null
 
-  override fun definition() =
-    ModuleDefinition {
-      Name("ExpoImageCropTool")
+  override fun definition() = ModuleDefinition {
+    Name("ExpoImageCropTool")
 
-      AsyncFunction("openCropperAsync") { options: OpenCropperOptions, promise: Promise ->
-        val context = appContext.reactContext
+    AsyncFunction("openCropperAsync") { options: OpenCropperOptions, promise: Promise ->
+      val context = appContext.reactContext
 
-        val intent = Intent(context, CropperActivity::class.java)
-        val bundle = options.toBundle()
-        intent.putExtras(bundle)
+      val intent = Intent(context, CropperActivity::class.java)
+      val bundle = options.toBundle()
+      intent.putExtras(bundle)
 
-        pendingPromise = promise
-        appContext.throwingActivity.startActivityForResult(intent, CROP_REQUEST_CODE)
+      pendingPromise = promise
+      appContext.throwingActivity.startActivityForResult(intent, CROP_REQUEST_CODE)
+    }
+
+    OnActivityResult { _, event ->
+      if (event.requestCode != CROP_REQUEST_CODE) {
+        return@OnActivityResult
       }
 
-      OnActivityResult { _, event ->
-        if (event.requestCode != CROP_REQUEST_CODE) {
-          return@OnActivityResult
-        }
+      val promise = pendingPromise ?: return@OnActivityResult
+      pendingPromise = null
 
-        val promise = pendingPromise ?: return@OnActivityResult
-        pendingPromise = null
-
-        event.data?.extras?.let {
-          if (event.resultCode == RESULT_OK) {
-            val result = OpenCropperResult.fromBundle(it)
+      when (event.resultCode) {
+        RESULT_OK -> {
+          // Only for successful results, we need extras
+          event.data?.extras?.let { extras ->
+            val result = OpenCropperResult.fromBundle(extras)
             promise.resolve(result)
-          } else {
-            promise.reject(CropperError.fromResultCode(event.resultCode).toCodedException())
           }
-        } ?: run {
-          promise.reject(
-            CropperError.Arguments.toCodedException(),
-          )
+                  ?: run {
+                    // Success but no data - this shouldn't happen
+                    promise.reject(CropperError.Arguments.toCodedException())
+                  }
+        }
+        else -> {
+          // For any non-OK result, we don't need extras
+          // Just use the result code to determine the error
+          promise.reject(CropperError.fromResultCode(event.resultCode).toCodedException())
         }
       }
     }
+  }
 }
