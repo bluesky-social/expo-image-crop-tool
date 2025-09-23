@@ -34,7 +34,6 @@ private fun Context.dpToPx(dp: Int): Int =
                 )
                 .toInt()
 
-
 class CropperActivity : AppCompatActivity() {
   private var cropView: CropImageView? = null
   private var options: OpenCropperOptions? = null
@@ -91,7 +90,7 @@ class CropperActivity : AppCompatActivity() {
                   }
                 }
               }
-              
+
               // Add listener for crop overlay changes
               setOnSetCropOverlayReleasedListener {
                 // Show reset button when crop area is adjusted
@@ -168,7 +167,7 @@ class CropperActivity : AppCompatActivity() {
               // Set padding inside the button
               val padding = dpToPx(12)
               setPadding(padding, padding, padding, padding)
-              
+
               // Initially hidden
               visibility = View.GONE
 
@@ -186,7 +185,7 @@ class CropperActivity : AppCompatActivity() {
                 visibility = View.GONE
               }
             }
-    
+
     this.resetBtn = resetBtn
     bar.addView(resetBtn)
 
@@ -270,56 +269,79 @@ class CropperActivity : AppCompatActivity() {
   }
 
   fun onDone() {
-    val bmap = cropView?.getCroppedImage() ?: return
-
-    val format = this.options?.format ?: "png"
-    val tempFile = File.createTempFile("cropped_image", ".$format", cacheDir)
-    val uri = tempFile.toUri()
-    val out = contentResolver.openOutputStream(uri)
-    out?.let {
-      val quality = (intent.getDoubleExtra("compressImageQuality", 1.0) * 100).toInt()
-      Log.d("ExpoCropTool", "quality was $quality")
-      bmap.compress(
-              when (format) {
-                "png" -> android.graphics.Bitmap.CompressFormat.PNG
-                "jpeg" -> android.graphics.Bitmap.CompressFormat.JPEG
-                else -> {
-                  setResult(CropperError.Arguments.getResultCode(), null)
-                  finish()
-                  return
-                }
-              },
-              quality,
-              out,
-      )
-    }
-            ?: run {
-              setResult(CropperError.WriteData.getResultCode(), null)
-              finish()
-              return
-            }
-
-    out.close()
-
-    val result =
-            OpenCropperResult()
-                    .apply {
-                      path = uri.toString()
-                      mimeType =
-                              when (format) {
-                                "png" -> "image/png"
-                                "jpeg" -> "image/jpeg"
-                                else -> null
-                              }
-                      size = bmap.byteCount
-                      width = bmap.width
-                      height = bmap.height
+    val options =
+            this.options
+                    ?: run {
+                      setResult(CropperError.Arguments.getResultCode(), null)
+                      finish()
+                      return
                     }
-                    .toBundle()
 
-    val resIntent = Intent().apply { putExtras(result) }
+    val bmap =
+            cropView?.getCroppedImage()
+                    ?: run {
+                      setResult(CropperError.GetData.getResultCode(), null)
+                      finish()
+                      return
+                    }
 
-    setResult(RESULT_OK, resIntent)
-    finish()
+    try {
+      val format = options.format ?: "png"
+      val tempFile = File.createTempFile("cropped_image", ".$format", cacheDir)
+      val uri = tempFile.toUri()
+
+      contentResolver.openOutputStream(uri)?.use { outputStream ->
+        val quality = ((options.compressImageQuality ?: 1.0).coerceIn(0.0, 1.0) * 100).toInt()
+
+        val compressFormat =
+                when (format) {
+                  "png" -> Bitmap.CompressFormat.PNG
+                  "jpeg" -> Bitmap.CompressFormat.JPEG
+                  else -> {
+                    setResult(CropperError.Arguments.getResultCode(), null)
+                    finish()
+                    return
+                  }
+                }
+
+        val success = bmap.compress(compressFormat, quality, outputStream)
+        if (!success) {
+          setResult(CropperError.WriteData.getResultCode(), null)
+          finish()
+          return
+        }
+      }
+              ?: run {
+                setResult(CropperError.WriteData.getResultCode(), null)
+                finish()
+                return
+              }
+
+      // Get actual file size
+      val fileSize = tempFile.length().toInt()
+
+      val result =
+              OpenCropperResult()
+                      .apply {
+                        path = uri.toString()
+                        mimeType =
+                                when (format) {
+                                  "png" -> "image/png"
+                                  "jpeg" -> "image/jpeg"
+                                  else -> null
+                                }
+                        size = fileSize // Actual file size, not memory size
+                        width = bmap.width
+                        height = bmap.height
+                      }
+                      .toBundle()
+
+      setResult(RESULT_OK, Intent().apply { putExtras(result) })
+      finish()
+    } catch (e: Exception) {
+      Log.e("ExpoCropTool", "Error saving cropped image", e)
+      setResult(CropperError.WriteData.getResultCode(), null)
+      finish()
+    }
   }
 }
