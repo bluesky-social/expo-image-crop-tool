@@ -43,14 +43,9 @@ class ExpoImageCropToolModule : Module() {
             val result = OpenCropperResult.fromBundle(extras)
             promise.resolve(result)
           }
-                  ?: run {
-                    // Success but no data - this shouldn't happen
-                    promise.reject(CropperError.Arguments.toCodedException())
-                  }
+                  ?: run { promise.reject(CropperError.Arguments.toCodedException()) }
         }
         else -> {
-          // For any non-OK result, we don't need extras
-          // Just use the result code to determine the error
           promise.reject(CropperError.fromResultCode(event.resultCode).toCodedException())
         }
       }
