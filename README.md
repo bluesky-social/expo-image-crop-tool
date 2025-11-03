@@ -37,8 +37,8 @@ For basic examples, see `example/App.tsx`.
 | `compressImageQuality` | `number` | ✅ | ✅ | If outputting a JPEG image, the compression quality for the output image. |
 | `rotationEnabled` | `boolean` | ✅ | ✅ | Whether or not to allow the user to rotate the image in 90 degree segments. Default is `true`. |
 | `rotationControlEnabled` | `boolean` | ✅ |  | Whether or not to show the rotation control view. Default is `true`. |
-| `cancelButtonText` | `string` | ✅ |  | Custom text for the Cancel button (iOS only). |
-| `doneButtonText` | `string` | ✅ |  | Custom text for the Done button (iOS only). |
+| `cancelButtonText` | `string` | ✅ | ✅ | Custom text for the Cancel button. |
+| `doneButtonText` | `string` | ✅ | ✅ | Custom text for the Done button. |
 
 
 ## `OpenCropperResult`
