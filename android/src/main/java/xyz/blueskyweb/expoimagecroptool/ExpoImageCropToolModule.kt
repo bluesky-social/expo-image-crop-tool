@@ -2,6 +2,7 @@ package xyz.blueskyweb.expoimagecroptool
 
 import android.app.Activity.RESULT_OK
 import android.content.Intent
+import android.util.Log
 import expo.modules.kotlin.Promise
 import expo.modules.kotlin.exception.toCodedException
 import expo.modules.kotlin.modules.Module
@@ -43,7 +44,10 @@ class ExpoImageCropToolModule : Module() {
             val result = OpenCropperResult.fromBundle(extras)
             promise.resolve(result)
           }
-                  ?: run { promise.reject(CropperError.Arguments.toCodedException()) }
+                  ?: run {
+                    Log.e("ExpoImageCropTool", "RESULT_OK with null extras")
+                    promise.reject(CropperError.Arguments.toCodedException())
+                  }
         }
         else -> {
           promise.reject(CropperError.fromResultCode(event.resultCode).toCodedException())
