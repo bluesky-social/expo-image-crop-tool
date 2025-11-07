@@ -11,6 +11,8 @@ class OpenCropperOptions(
   @Field var format: String? = null,
   @Field var compressImageQuality: Double? = null,
   @Field var rotationEnabled: Boolean? = true,
+  @Field var cancelButtonText: String? = null,
+  @Field var doneButtonText: String? = null,
 ) : Record {
   fun toBundle(): Bundle =
     Bundle().apply {
@@ -20,6 +22,8 @@ class OpenCropperOptions(
       putString("format", format)
       putDouble("compressImageQuality", compressImageQuality ?: 1.0)
       putBoolean("rotationEnabled", rotationEnabled ?: true)
+      putString("cancelButtonText", cancelButtonText)
+      putString("doneButtonText", doneButtonText)
     }
 
   companion object {
@@ -31,6 +35,8 @@ class OpenCropperOptions(
         format = bundle.getString("format"),
         compressImageQuality = bundle.getDouble("compressImageQuality"),
         rotationEnabled = bundle.getBoolean("rotationEnabled", true),
+        cancelButtonText = bundle.getString("cancelButtonText"),
+        doneButtonText = bundle.getString("doneButtonText"),
       )
   }
 }

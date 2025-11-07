@@ -1,5 +1,6 @@
 import ExpoModulesCore
 import Mantis
+import UIKit
 
 enum CropperError: LocalizedError {
   case openImage
@@ -53,6 +54,14 @@ class Cropper: NSObject, CropViewControllerDelegate {
     var config = Mantis.Config()
     config.ratioOptions = []
 
+    // Set up custom localization if button text is provided
+    if let bundle = Self.createLocalizationBundle(
+      cancelText: options.cancelButtonText,
+      doneText: options.doneButtonText
+    ) {
+      config.localizationConfig.bundle = bundle
+    }
+
     if let aspectRatio = options.aspectRatio {
       config.presetFixedRatioType = .alwaysUsingOnePresetFixedRatio(ratio: aspectRatio)
     } else if options.shape != "circle" {
@@ -60,6 +69,9 @@ class Cropper: NSObject, CropViewControllerDelegate {
     }
 
     var viewConfig = Mantis.CropViewConfig()
+    
+    // Keep crop box stationary when rotating image
+    viewConfig.rotateCropBoxFor90DegreeRotation = false
 
     if options.rotationControlEnabled == false {
       // Disable rotation control view if rotationControlEnabled is false
@@ -146,7 +158,7 @@ class Cropper: NSObject, CropViewControllerDelegate {
   }
 
   func open() throws {
-    guard let rootVc = UIApplication.shared.windows.first?.rootViewController else {
+    guard let rootVc = getRootViewController() else {
       throw CropperError.findRootView
     }
 
@@ -159,10 +171,54 @@ class Cropper: NSObject, CropViewControllerDelegate {
     }
   }
 
+  private func getRootViewController() -> UIViewController? {
+    if #available(iOS 15.0, *) {
+      return UIApplication.shared.connectedScenes
+        .compactMap { $0 as? UIWindowScene }
+        .flatMap { $0.windows }
+        .first { $0.isKeyWindow }?
+        .rootViewController
+    } else {
+      return UIApplication.shared.windows.first?.rootViewController
+    }
+  }
+
   private static func getTempUrl(ext: String) -> URL? {
     let dir = FileManager().temporaryDirectory
     return URL(
       string: "\(dir.absoluteString)\(ProcessInfo.processInfo.globallyUniqueString).\(ext)")!
+  }
+
+  private static func createLocalizationBundle(cancelText: String?, doneText: String?) -> Bundle? {
+    guard cancelText != nil || doneText != nil else {
+      return nil
+    }
+
+    let fileManager = FileManager.default
+    let tempDir = fileManager.temporaryDirectory
+    let bundleDir = tempDir.appendingPathComponent(UUID().uuidString)
+    let lProjDir = bundleDir.appendingPathComponent("en.lproj")
+
+    do {
+      try fileManager.createDirectory(at: lProjDir, withIntermediateDirectories: true)
+
+      var stringsContent = ""
+
+      if let cancelText = cancelText {
+        stringsContent += "\"Mantis.Cancel\" = \"\(cancelText)\";\n"
+      }
+
+      if let doneText = doneText {
+        stringsContent += "\"Mantis.Done\" = \"\(doneText)\";\n"
+      }
+
+      let stringsFile = lProjDir.appendingPathComponent("MantisLocalizable.strings")
+      try stringsContent.write(to: stringsFile, atomically: true, encoding: .utf8)
+
+      return Bundle(url: bundleDir)
+    } catch {
+      return nil
+    }
   }
 }
 

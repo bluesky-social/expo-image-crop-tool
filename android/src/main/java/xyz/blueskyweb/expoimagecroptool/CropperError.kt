@@ -34,6 +34,7 @@ sealed class CropperError(
         103 -> WriteData
         104 -> Cancelled
         105 -> Arguments
+        0 -> Cancelled // RESULT_CANCELED - back button, system cancellation
         else -> throw IllegalArgumentException("Unknown result code: $resultCode")
       }
   }

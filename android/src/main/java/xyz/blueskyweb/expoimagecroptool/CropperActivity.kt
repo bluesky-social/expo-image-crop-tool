@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
-import android.graphics.Matrix
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -28,23 +27,18 @@ import com.canhub.cropper.CropImageView
 import java.io.File
 
 private fun Context.dpToPx(dp: Int): Int =
-        TypedValue.applyDimension(
-                        TypedValue.COMPLEX_UNIT_DIP,
-                        dp.toFloat(),
-                        resources.displayMetrics,
-                )
-                .toInt()
-
-// https://gist.github.com/codeswimmer/858833?permalink_comment_id=2347183#gistcomment-2347183
-fun Bitmap.rotate(degrees: Float): Bitmap {
-  val matrix = Matrix().apply { postRotate(degrees) }
-  return Bitmap.createBitmap(this, 0, 0, width, height, matrix, true)
-}
+  TypedValue
+    .applyDimension(
+      TypedValue.COMPLEX_UNIT_DIP,
+      dp.toFloat(),
+      resources.displayMetrics,
+    ).toInt()
 
 class CropperActivity : AppCompatActivity() {
   private var cropView: CropImageView? = null
   private var options: OpenCropperOptions? = null
-  private var prevRotation: Int = 0
+  private var resetBtn: AppCompatImageButton? = null
+  private var rotationCount: Int = 0
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -53,50 +47,56 @@ class CropperActivity : AppCompatActivity() {
     WindowCompat.setDecorFitsSystemWindows(window, false)
 
     val options =
-            intent.extras?.let { OpenCropperOptions.fromBundle(it) }
-                    ?: run {
-                      setResult(CropperError.Arguments.getResultCode(), null)
-                      finish()
-                      return
-                    }
+      intent.extras?.let { OpenCropperOptions.fromBundle(it) }
+        ?: run {
+          setResult(CropperError.Arguments.getResultCode(), null)
+          finish()
+          return
+        }
     this.options = options
 
     val cropView =
-            CropImageView(this).apply {
-              options.imageUri?.let { setImageUriAsync(it.toUri()) }
-                      ?: run {
-                        setResult(CropperError.OpenImage.getResultCode(), null)
-                        finish()
-                        return
-                      }
+      CropImageView(this).apply {
+        options.imageUri?.let { setImageUriAsync(it.toUri()) }
+          ?: run {
+            setResult(CropperError.OpenImage.getResultCode(), null)
+            finish()
+            return
+          }
 
-              options.shape?.let {
-                cropShape =
-                        when (it) {
-                          "rectangle" -> CropImageView.CropShape.RECTANGLE
-                          "circle" -> CropImageView.CropShape.OVAL
-                          else -> {
-                            setResult(CropperError.Arguments.getResultCode(), null)
-                            finish()
-                            return
-                          }
-                        }
-              }
-
-              if (options.shape == "circle") {
-                setFixedAspectRatio(true)
-                setAspectRatio(1, 1)
-              } else {
-                options.aspectRatio?.let {
-                  if (it <= 0) {
-                    setFixedAspectRatio(false)
-                  } else {
-                    setFixedAspectRatio(true)
-                    setAspectRatio((it * 100).toInt(), 100)
-                  }
-                }
+        options.shape?.let {
+          cropShape =
+            when (it) {
+              "rectangle" -> CropImageView.CropShape.RECTANGLE
+              "circle" -> CropImageView.CropShape.OVAL
+              else -> {
+                setResult(CropperError.Arguments.getResultCode(), null)
+                finish()
+                return
               }
             }
+        }
+
+        if (options.shape == "circle") {
+          setFixedAspectRatio(true)
+          setAspectRatio(1, 1)
+        } else {
+          options.aspectRatio?.let {
+            if (it <= 0) {
+              setFixedAspectRatio(false)
+            } else {
+              setFixedAspectRatio(true)
+              setAspectRatio((it * 100).toInt(), 100)
+            }
+          }
+        }
+
+        // Add listener for crop overlay changes
+        setOnSetCropOverlayReleasedListener {
+          // Show reset button when crop area is adjusted
+          resetBtn?.visibility = View.VISIBLE
+        }
+      }
 
     this.cropView = cropView
 
@@ -109,37 +109,37 @@ class CropperActivity : AppCompatActivity() {
     val root = FrameLayout(this).apply { setBackgroundColor(Color.BLACK) }
 
     root.addView(
-            cropView,
-            FrameLayout.LayoutParams(
-                    MATCH_PARENT,
-                    MATCH_PARENT,
-            ),
+      cropView,
+      FrameLayout.LayoutParams(
+        MATCH_PARENT,
+        MATCH_PARENT,
+      ),
     )
 
     val bar =
-            LinearLayout(this).apply {
-              orientation = LinearLayout.HORIZONTAL
-              setBackgroundColor("#66000000".toColorInt())
-              val dp16 = dpToPx(16)
-              setPadding(0, dp16, 0, dp16) // Remove horizontal padding
-              gravity = Gravity.CENTER_VERTICAL // Change to center vertical
-            }
+      LinearLayout(this).apply {
+        orientation = LinearLayout.HORIZONTAL
+        setBackgroundColor("#66000000".toColorInt())
+        val dp16 = dpToPx(16)
+        setPadding(0, dp16, 0, dp16) // Remove horizontal padding
+        gravity = Gravity.CENTER_VERTICAL // Change to center vertical
+      }
 
     val cancelBtn =
-            AppCompatButton(this).apply {
-              text = "CANCEL"
-              setTextColor(Color.WHITE)
-              setBackgroundColor(Color.TRANSPARENT) // Transparent background
-              layoutParams =
-                      LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
-                        // No weight to prevent stretching
-                        setMargins(dpToPx(16), 0, 0, 0) // Left margin only
-                      }
-              setOnClickListener {
-                setResult(RESULT_CANCELED)
-                finish()
-              }
-            }
+      AppCompatButton(this).apply {
+        text = options.cancelButtonText ?: "CANCEL"
+        setTextColor(Color.WHITE)
+        setBackgroundColor(Color.TRANSPARENT) // Transparent background
+        layoutParams =
+          LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
+            // No weight to prevent stretching
+            setMargins(dpToPx(16), 0, 0, 0) // Left margin only
+          }
+        setOnClickListener {
+          setResult(CropperError.Cancelled.getResultCode(), null)
+          finish()
+        }
+      }
     bar.addView(cancelBtn)
 
     // Spacer to push reset to center
@@ -147,68 +147,78 @@ class CropperActivity : AppCompatActivity() {
     bar.addView(leftSpacer)
 
     val resetBtn =
-            AppCompatImageButton(this).apply {
-              // Use the reset icon
-              setImageResource(R.drawable.ic_reset)
+      AppCompatImageButton(this).apply {
+        // Use the reset icon
+        setImageResource(R.drawable.ic_reset)
 
-              // Set content description for accessibility
-              contentDescription = "Reset"
+        // Set content description for accessibility
+        contentDescription = "Reset"
 
-              // Make the icon white
-              setColorFilter(Color.WHITE)
+        // Make the icon white
+        setColorFilter(Color.WHITE)
 
-              // Set a transparent background
-              setBackgroundColor(Color.TRANSPARENT)
+        // Set a transparent background
+        setBackgroundColor(Color.TRANSPARENT)
 
-              // Set the layout parameters with proper sizing
-              val buttonSize = dpToPx(48)
-              layoutParams = LinearLayout.LayoutParams(buttonSize, buttonSize)
+        // Set the layout parameters with proper sizing
+        val buttonSize = dpToPx(48)
+        layoutParams = LinearLayout.LayoutParams(buttonSize, buttonSize)
 
-              // Set padding inside the button
-              val padding = dpToPx(12)
-              setPadding(padding, padding, padding, padding)
+        // Set padding inside the button
+        val padding = dpToPx(12)
+        setPadding(padding, padding, padding, padding)
 
-              // Set the click listener
-              setOnClickListener {
-                if (options?.rotationEnabled != false && prevRotation != 0) {
-                  cropView.rotateImage(-1 * prevRotation)
-                  prevRotation = 0
-                }
-                cropView.resetCropRect()
-              }
-            }
+        // Initially hidden
+        visibility = View.GONE
 
+        // Set the click listener
+        setOnClickListener {
+          // Reset rotation
+          if (rotationCount % 4 != 0) {
+            val rotationsToReset = (4 - (rotationCount % 4)) * 90
+            cropView.rotateImage(rotationsToReset)
+            rotationCount = 0
+          }
+          // Reset crop
+          cropView.resetCropRect()
+          // Hide reset button
+          visibility = View.GONE
+        }
+      }
+
+    this.resetBtn = resetBtn
     bar.addView(resetBtn)
 
     if (options.rotationEnabled != false) {
       val rotateBtn =
-              AppCompatImageButton(this).apply {
-                // Use the Material Design icon for rotation
-                setImageResource(R.drawable.ic_rotate)
+        AppCompatImageButton(this).apply {
+          // Use the Material Design icon for rotation
+          setImageResource(R.drawable.ic_rotate)
 
-                // Set content description for accessibility
-                contentDescription = "Rotate"
+          // Set content description for accessibility
+          contentDescription = "Rotate"
 
-                // Make the icon white
-                setColorFilter(Color.WHITE)
+          // Make the icon white
+          setColorFilter(Color.WHITE)
 
-                // Set a transparent background
-                setBackgroundColor(Color.TRANSPARENT)
+          // Set a transparent background
+          setBackgroundColor(Color.TRANSPARENT)
 
-                // Set the layout parameters with proper sizing
-                val buttonSize = dpToPx(48)
-                layoutParams = LinearLayout.LayoutParams(buttonSize, buttonSize)
+          // Set the layout parameters with proper sizing
+          val buttonSize = dpToPx(48)
+          layoutParams = LinearLayout.LayoutParams(buttonSize, buttonSize)
 
-                // Set padding inside the button
-                val padding = dpToPx(12)
-                setPadding(padding, padding, padding, padding)
+          // Set padding inside the button
+          val padding = dpToPx(12)
+          setPadding(padding, padding, padding, padding)
 
-                // Set the click listener
-                setOnClickListener {
-                  cropView.rotateImage(90)
-                  prevRotation = (prevRotation + 90) % 360
-                }
-              }
+          // Set the click listener
+          setOnClickListener {
+            cropView.rotateImage(90)
+            rotationCount++
+            resetBtn?.visibility = View.VISIBLE
+          }
+        }
       bar.addView(rotateBtn)
     }
 
@@ -218,26 +228,26 @@ class CropperActivity : AppCompatActivity() {
 
     // Done button (right-aligned)
     val doneBtn =
-            AppCompatButton(this).apply {
-              text = "DONE"
-              setTextColor(Color.YELLOW)
-              setBackgroundColor(Color.TRANSPARENT) // Transparent background
-              layoutParams =
-                      LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
-                        // No weight to prevent stretching
-                        setMargins(0, 0, dpToPx(16), 0) // Right margin only
-                      }
-              setOnClickListener { onDone() }
-            }
+      AppCompatButton(this).apply {
+        text = options.doneButtonText ?: "DONE"
+        setTextColor(Color.YELLOW)
+        setBackgroundColor(Color.TRANSPARENT) // Transparent background
+        layoutParams =
+          LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
+            // No weight to prevent stretching
+            setMargins(0, 0, dpToPx(16), 0) // Right margin only
+          }
+        setOnClickListener { onDone() }
+      }
     bar.addView(doneBtn)
 
     root.addView(
-            bar,
-            FrameLayout.LayoutParams(
-                    MATCH_PARENT,
-                    WRAP_CONTENT,
-                    Gravity.BOTTOM,
-            ),
+      bar,
+      FrameLayout.LayoutParams(
+        MATCH_PARENT,
+        WRAP_CONTENT,
+        Gravity.BOTTOM,
+      ),
     )
 
     setContentView(root)
@@ -254,65 +264,84 @@ class CropperActivity : AppCompatActivity() {
         it.systemBarsBehavior = android.view.WindowInsetsController.BEHAVIOR_DEFAULT
       }
     } else {
-      @Suppress("DEPRECATION") window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
+      @Suppress("DEPRECATION")
+      window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
     }
   }
 
   fun onDone() {
-    var bmap = cropView?.getCroppedImage() ?: return
+    val options =
+      this.options
+        ?: run {
+          setResult(CropperError.Arguments.getResultCode(), null)
+          finish()
+          return
+        }
 
-    if (options?.rotationEnabled != false && prevRotation != 0) {
-      bmap = bmap.rotate(prevRotation.toFloat())
-    }
+    val bmap =
+      cropView?.getCroppedImage()
+        ?: run {
+          setResult(CropperError.GetData.getResultCode(), null)
+          finish()
+          return
+        }
 
-    val format = this.options?.format ?: "png"
-    val tempFile = File.createTempFile("cropped_image", ".$format", cacheDir)
-    val uri = tempFile.toUri()
-    val out = contentResolver.openOutputStream(uri)
-    out?.let {
-      val quality = (intent.getDoubleExtra("compressImageQuality", 1.0) * 100).toInt()
-      Log.d("ExpoCropTool", "quality was $quality")
-      bmap.compress(
-              when (format) {
-                "png" -> android.graphics.Bitmap.CompressFormat.PNG
-                "jpeg" -> android.graphics.Bitmap.CompressFormat.JPEG
-                else -> {
-                  setResult(CropperError.Arguments.getResultCode(), null)
-                  finish()
-                  return
-                }
-              },
-              quality,
-              out,
-      )
-    }
-            ?: run {
-              setResult(CropperError.WriteData.getResultCode(), null)
+    try {
+      val format = options.format ?: "png"
+      val tempFile = File.createTempFile("cropped_image", ".$format", cacheDir)
+      val uri = tempFile.toUri()
+
+      contentResolver.openOutputStream(uri)?.use { outputStream ->
+        val quality = ((options.compressImageQuality ?: 1.0).coerceIn(0.0, 1.0) * 100).toInt()
+
+        val compressFormat =
+          when (format) {
+            "png" -> Bitmap.CompressFormat.PNG
+            "jpeg" -> Bitmap.CompressFormat.JPEG
+            else -> {
+              setResult(CropperError.Arguments.getResultCode(), null)
               finish()
               return
             }
+          }
 
-    out.close()
+        val success = bmap.compress(compressFormat, quality, outputStream)
+        if (!success) {
+          setResult(CropperError.WriteData.getResultCode(), null)
+          finish()
+          return
+        }
+      }
+        ?: run {
+          setResult(CropperError.WriteData.getResultCode(), null)
+          finish()
+          return
+        }
 
-    val result =
-            OpenCropperResult()
-                    .apply {
-                      path = uri.toString()
-                      mimeType =
-                              when (format) {
-                                "png" -> "image/png"
-                                "jpeg" -> "image/jpeg"
-                                else -> null
-                              }
-                      size = bmap.byteCount
-                      width = bmap.width
-                      height = bmap.height
-                    }
-                    .toBundle()
+      // Get actual file size
+      val fileSize = tempFile.length().toInt()
 
-    val resIntent = Intent().apply { putExtras(result) }
+      val result =
+        OpenCropperResult()
+          .apply {
+            path = uri.toString()
+            mimeType =
+              when (format) {
+                "png" -> "image/png"
+                "jpeg" -> "image/jpeg"
+                else -> null
+              }
+            size = fileSize // Actual file size, not memory size
+            width = bmap.width
+            height = bmap.height
+          }.toBundle()
 
-    setResult(RESULT_OK, resIntent)
-    finish()
+      setResult(RESULT_OK, Intent().apply { putExtras(result) })
+      finish()
+    } catch (e: Exception) {
+      Log.e("ExpoCropTool", "Error saving cropped image", e)
+      setResult(CropperError.WriteData.getResultCode(), null)
+      finish()
+    }
   }
 }
