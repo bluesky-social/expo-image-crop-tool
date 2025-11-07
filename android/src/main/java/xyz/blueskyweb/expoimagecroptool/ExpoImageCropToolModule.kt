@@ -15,44 +15,45 @@ class ExpoImageCropToolModule : Module() {
 
   private var pendingPromise: Promise? = null
 
-  override fun definition() = ModuleDefinition {
-    Name("ExpoImageCropTool")
+  override fun definition() =
+    ModuleDefinition {
+      Name("ExpoImageCropTool")
 
-    AsyncFunction("openCropperAsync") { options: OpenCropperOptions, promise: Promise ->
-      val context = appContext.reactContext
+      AsyncFunction("openCropperAsync") { options: OpenCropperOptions, promise: Promise ->
+        val context = appContext.reactContext
 
-      val intent = Intent(context, CropperActivity::class.java)
-      val bundle = options.toBundle()
-      intent.putExtras(bundle)
+        val intent = Intent(context, CropperActivity::class.java)
+        val bundle = options.toBundle()
+        intent.putExtras(bundle)
 
-      pendingPromise = promise
-      appContext.throwingActivity.startActivityForResult(intent, CROP_REQUEST_CODE)
-    }
-
-    OnActivityResult { _, event ->
-      if (event.requestCode != CROP_REQUEST_CODE) {
-        return@OnActivityResult
+        pendingPromise = promise
+        appContext.throwingActivity.startActivityForResult(intent, CROP_REQUEST_CODE)
       }
 
-      val promise = pendingPromise ?: return@OnActivityResult
-      pendingPromise = null
+      OnActivityResult { _, event ->
+        if (event.requestCode != CROP_REQUEST_CODE) {
+          return@OnActivityResult
+        }
 
-      when (event.resultCode) {
-        RESULT_OK -> {
-          // Only for successful results, we need extras
-          event.data?.extras?.let { extras ->
-            val result = OpenCropperResult.fromBundle(extras)
-            promise.resolve(result)
+        val promise = pendingPromise ?: return@OnActivityResult
+        pendingPromise = null
+
+        when (event.resultCode) {
+          RESULT_OK -> {
+            // Only for successful results, we need extras
+            event.data?.extras?.let { extras ->
+              val result = OpenCropperResult.fromBundle(extras)
+              promise.resolve(result)
+            }
+              ?: run {
+                Log.e("ExpoImageCropTool", "RESULT_OK with null extras")
+                promise.reject(CropperError.Arguments.toCodedException())
+              }
           }
-                  ?: run {
-                    Log.e("ExpoImageCropTool", "RESULT_OK with null extras")
-                    promise.reject(CropperError.Arguments.toCodedException())
-                  }
-        }
-        else -> {
-          promise.reject(CropperError.fromResultCode(event.resultCode).toCodedException())
+          else -> {
+            promise.reject(CropperError.fromResultCode(event.resultCode).toCodedException())
+          }
         }
       }
     }
-  }
 }
