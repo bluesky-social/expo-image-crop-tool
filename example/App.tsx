@@ -130,6 +130,21 @@ export default function App() {
             doCrop({
               doneButtonText: "Apply",
               cancelButtonText: "Discard",
+              toolbarBackgroundColor: "#00ff00",
+              toolbarForegroundColor: "#0000ff",
+              cropBackgroundColor: "#b700ff80",
+              viewControllerBackgroundColor: "#ff3700ff",
+            })
+          }
+        />
+        <Button
+          title="Custom Theme Options"
+          onPress={() =>
+            doCrop({
+              toolbarBackgroundColor: "#00ff00",
+              toolbarForegroundColor: "#0000ff",
+              cropBackgroundColor: "#b700ff80",
+              viewControllerBackgroundColor: "#ff3700ff",
             })
           }
         />

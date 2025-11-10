@@ -8,6 +8,10 @@ export interface OpenCropperOptions {
   rotationControlEnabled?: boolean;
   cancelButtonText?: string;
   doneButtonText?: string;
+  toolbarBackgroundColor?: string;
+  toolbarForegroundColor?: string;
+  cropBackgroundColor?: string;
+  viewControllerBackgroundColor?: string;
 }
 
 export interface OpenCropperResult {

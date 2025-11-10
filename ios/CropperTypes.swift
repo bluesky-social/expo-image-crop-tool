@@ -27,6 +27,18 @@ struct OpenCropperOptions: Record {
 
   @Field
   var doneButtonText: String?
+
+  @Field
+  var toolbarBackgroundColor: String?
+
+  @Field
+  var toolbarForegroundColor: String?
+
+  @Field
+  var cropBackgroundColor: String?
+
+  @Field
+  var viewControllerBackgroundColor: String?
 }
 
 struct OpenCropperResult: Record {
