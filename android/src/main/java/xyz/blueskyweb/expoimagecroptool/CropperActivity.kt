@@ -36,22 +36,29 @@ private fun Context.dpToPx(dp: Int): Int =
 
 /**
  * Convert hex color string to Android color int.
- * Handles both iOS format (#RRGGBBAA) and Android format (#AARRGGBB).
- * Converts iOS format to Android format if alpha channel is detected at the end.
+ * Handles iOS format (#RRGGBBAA), Android format (#AARRGGBB), and shorthand (#RGB/#RGBA).
+ * Returns null if the string is empty or invalid.
  */
-private fun String.toAndroidColorInt(): Int {
-  var hex = this.trim().removePrefix("#")
-  
-  // If 8 characters (RRGGBBAA), convert to Android format (AARRGGBB)
-  if (hex.length == 8) {
-    val rr = hex.substring(0, 2)
-    val gg = hex.substring(2, 4)
-    val bb = hex.substring(4, 6)
-    val aa = hex.substring(6, 8)
-    hex = aa + rr + gg + bb
+private fun String.toAndroidColorInt(): Int? {
+  var hex = trim().removePrefix("#")
+  if (hex.isEmpty()) return null
+
+  // Expand shorthand formats: #RGB -> #RRGGBB, #RGBA -> #RRGGBBAA
+  if (hex.length == 3 || hex.length == 4) {
+    hex = hex.map { "$it$it" }.joinToString("")
   }
-  
-  return ("#" + hex).toColorInt()
+
+  // Convert iOS format (RRGGBBAA) to Android format (AARRGGBB)
+  if (hex.length == 8) {
+    hex = hex.substring(6, 8) + hex.substring(0, 6)
+  }
+
+  return try {
+    "#$hex".toColorInt()
+  } catch (e: IllegalArgumentException) {
+    Log.w("ExpoCropTool", "Invalid color format: '$this'")
+    null
+  }
 }
 
 class CropperActivity : AppCompatActivity() {
@@ -126,10 +133,10 @@ class CropperActivity : AppCompatActivity() {
       insets
     }
 
-    val root = FrameLayout(this).apply { 
+    val root = FrameLayout(this).apply {
       // On Android, only cropBackgroundColor is used (viewControllerBackgroundColor is iOS-only)
-      val bgColor = options.cropBackgroundColor ?: "#000000" // default black
-      setBackgroundColor(bgColor.toAndroidColorInt())
+      val bgColor = options.cropBackgroundColor?.toAndroidColorInt() ?: Color.BLACK
+      setBackgroundColor(bgColor)
     }
 
     root.addView(
