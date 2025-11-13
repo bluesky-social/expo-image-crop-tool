@@ -73,27 +73,38 @@ class Cropper: NSObject, CropViewControllerDelegate {
     // Keep crop box stationary when rotating image
     viewConfig.rotateCropBoxFor90DegreeRotation = false
 
+    // Apply background color to crop view area if provided
+    if let bgColorHex = options.cropBackgroundColor {
+      viewConfig.backgroundColor = UIColor(hexString: bgColorHex)
+    }
+
     if options.rotationControlEnabled == false {
       // Disable rotation control view if rotationControlEnabled is false
       viewConfig.showAttachedRotationControlView = false
     }
 
-    // Disable rotation control view if rotationEnabled is false
-    if options.rotationEnabled == false {
-      // Create a toolbar config with rotation buttons removed
-      var toolbarConfig = Mantis.CropToolbarConfig()
+    // Create a toolbar config
+    var toolbarConfig = Mantis.CropToolbarConfig()
 
-      // Get the default options and remove rotation options
+    // Apply custom colors if provided
+    if let bgColorHex = options.toolbarBackgroundColor {
+      toolbarConfig.backgroundColor = UIColor(hexString: bgColorHex) ?? .black
+    }
+
+    if let fgColorHex = options.toolbarForegroundColor {
+      toolbarConfig.foregroundColor = UIColor(hexString: fgColorHex) ?? .white
+    }
+
+    // Handle rotation button removal if needed
+    if options.rotationEnabled == false {
       var buttonOptions = toolbarConfig.toolbarButtonOptions
       buttonOptions.remove(.clockwiseRotate)
       buttonOptions.remove(.counterclockwiseRotate)
-
-      // Set the modified options back
       toolbarConfig.toolbarButtonOptions = buttonOptions
-
-      // Assign the toolbar config to the main config
-      config.cropToolbarConfig = toolbarConfig
     }
+
+    // Always assign the toolbar config
+    config.cropToolbarConfig = toolbarConfig
 
     if options.shape == "circle" {
       config.ratioOptions = []
@@ -105,6 +116,12 @@ class Cropper: NSObject, CropViewControllerDelegate {
     let cropVc = Mantis.cropViewController(image: image, config: config)
     cropVc.delegate = self
     cropVc.modalPresentationStyle = .fullScreen
+    
+    // Apply background color to the view controller (area behind everything)
+    if let bgColorHex = options.viewControllerBackgroundColor {
+      cropVc.view.backgroundColor = UIColor(hexString: bgColorHex)
+    }
+    
     self.cropVc = cropVc
   }
 
@@ -239,5 +256,34 @@ extension UIViewController {
     } else {
       return self
     }
+  }
+}
+
+extension UIColor {
+  convenience init?(hexString: String) {
+    var hex = hexString.trimmingCharacters(in: .whitespacesAndNewlines)
+    hex = hex.replacingOccurrences(of: "#", with: "")
+
+    var rgb: UInt64 = 0
+    guard Scanner(string: hex).scanHexInt64(&rgb) else { return nil }
+
+    let length = hex.count
+    let r, g, b, a: CGFloat
+
+    if length == 6 {
+      r = CGFloat((rgb & 0xFF0000) >> 16) / 255.0
+      g = CGFloat((rgb & 0x00FF00) >> 8) / 255.0
+      b = CGFloat(rgb & 0x0000FF) / 255.0
+      a = 1.0
+    } else if length == 8 {
+      r = CGFloat((rgb & 0xFF000000) >> 24) / 255.0
+      g = CGFloat((rgb & 0x00FF0000) >> 16) / 255.0
+      b = CGFloat((rgb & 0x0000FF00) >> 8) / 255.0
+      a = CGFloat(rgb & 0x000000FF) / 255.0
+    } else {
+      return nil
+    }
+
+    self.init(red: r, green: g, blue: b, alpha: a)
   }
 }
