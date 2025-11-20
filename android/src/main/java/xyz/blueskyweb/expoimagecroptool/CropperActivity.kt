@@ -100,29 +100,22 @@ class CropperActivity : AppCompatActivity() {
 
     this.cropView = cropView
 
-    ViewCompat.setOnApplyWindowInsetsListener(cropView) { view, insets ->
-      val sysBars = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
-      view.setPadding(0, sysBars.top, 0, sysBars.bottom)
-      insets
-    }
-
     val root = FrameLayout(this).apply { setBackgroundColor(Color.BLACK) }
 
-    root.addView(
-      cropView,
-      FrameLayout.LayoutParams(
-        MATCH_PARENT,
-        MATCH_PARENT,
-      ),
+    val cropViewLayoutParams = FrameLayout.LayoutParams(
+      MATCH_PARENT,
+      MATCH_PARENT,
     )
+
+    root.addView(cropView, cropViewLayoutParams)
 
     val bar =
       LinearLayout(this).apply {
         orientation = LinearLayout.HORIZONTAL
         setBackgroundColor("#66000000".toColorInt())
         val dp16 = dpToPx(16)
-        setPadding(0, dp16, 0, dp16) // Remove horizontal padding
-        gravity = Gravity.CENTER_VERTICAL // Change to center vertical
+        setPadding(0, dp16, 0, dp16)
+        gravity = Gravity.CENTER_VERTICAL
       }
 
     val cancelBtn =
@@ -241,20 +234,33 @@ class CropperActivity : AppCompatActivity() {
       }
     bar.addView(doneBtn)
 
-    root.addView(
-      bar,
-      FrameLayout.LayoutParams(
-        MATCH_PARENT,
-        WRAP_CONTENT,
-        Gravity.BOTTOM,
-      ),
+    val barLayoutParams = FrameLayout.LayoutParams(
+      MATCH_PARENT,
+      WRAP_CONTENT,
+      Gravity.BOTTOM,
     )
+
+    root.addView(bar, barLayoutParams)
 
     setContentView(root)
 
     ViewCompat.setOnApplyWindowInsetsListener(root) { view, insets ->
-      val systemBarsInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
-      view.setPadding(0, systemBarsInsets.top, 0, systemBarsInsets.bottom)
+      val systemBarsInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+
+      barLayoutParams.setMargins(0, 0, 0, systemBarsInsets.bottom)
+      bar.layoutParams = barLayoutParams
+
+      bar.post {
+        val toolbarHeight = bar.measuredHeight + systemBarsInsets.bottom
+        cropViewLayoutParams.setMargins(
+          systemBarsInsets.left,
+          systemBarsInsets.top,
+          systemBarsInsets.right,
+          toolbarHeight
+        )
+        cropView.layoutParams = cropViewLayoutParams
+      }
+
       insets
     }
 
