@@ -1,6 +1,6 @@
 {
   "name": "expo-image-crop-tool",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "An image cropper for Expo",
   "main": "build/index.js",
   "types": "build/index.d.ts",
