@@ -13,10 +13,13 @@ For bare React Native projects, you must ensure that you have [installed and con
 ### Add the package to your npm dependencies
 
 ```bash
-npm install expo-image-crop-tool
+npm install @bsky.app/expo-image-crop-tool
 cd ios
 pod install
 ```
+
+> [!NOTE]
+> This package was previously published as `expo-image-crop-tool`, but is now called `@bsky.app/expo-image-crop-tool`.
 
 # Usage
 
@@ -28,26 +31,24 @@ For basic examples, see `example/App.tsx`.
 
 ## `OpenCropperOptions`
 
-| Key | Type | iOS | Android | Description |
-|-----|------|-----|---------|-------------|
-| `imageUri` | `string` | ✅ | ✅ | A path to the image that you want to crop. |
-| `shape` | `string` | ✅ | ✅ | The shape that you want the returned image to be (`'rectangle'` \| `'circle'`). Default is `rectangle`. |
-| `aspectRatio` | `number` | ✅ | ✅ | If you want to force a particular aspect ratio for the output image. |
-| `format` | `string` | ✅ | ✅ | The format of the output image (`'png'` \| `'jpeg'`). Default is `png`. |
-| `compressImageQuality` | `number` | ✅ | ✅ | If outputting a JPEG image, the compression quality for the output image. |
-| `rotationEnabled` | `boolean` | ✅ | ✅ | Whether or not to allow the user to rotate the image in 90 degree segments. Default is `true`. |
-| `rotationControlEnabled` | `boolean` | ✅ |  | Whether or not to show the rotation control view. Default is `true`. |
-| `cancelButtonText` | `string` | ✅ | ✅ | Custom text for the Cancel button. |
-| `doneButtonText` | `string` | ✅ | ✅ | Custom text for the Done button. |
-
+| Key                      | Type      | iOS | Android | Description                                                                                             |
+| ------------------------ | --------- | --- | ------- | ------------------------------------------------------------------------------------------------------- |
+| `imageUri`               | `string`  | ✅  | ✅      | A path to the image that you want to crop.                                                              |
+| `shape`                  | `string`  | ✅  | ✅      | The shape that you want the returned image to be (`'rectangle'` \| `'circle'`). Default is `rectangle`. |
+| `aspectRatio`            | `number`  | ✅  | ✅      | If you want to force a particular aspect ratio for the output image.                                    |
+| `format`                 | `string`  | ✅  | ✅      | The format of the output image (`'png'` \| `'jpeg'`). Default is `png`.                                 |
+| `compressImageQuality`   | `number`  | ✅  | ✅      | If outputting a JPEG image, the compression quality for the output image.                               |
+| `rotationEnabled`        | `boolean` | ✅  | ✅      | Whether or not to allow the user to rotate the image in 90 degree segments. Default is `true`.          |
+| `rotationControlEnabled` | `boolean` | ✅  |         | Whether or not to show the rotation control view. Default is `true`.                                    |
+| `cancelButtonText`       | `string`  | ✅  | ✅      | Custom text for the Cancel button.                                                                      |
+| `doneButtonText`         | `string`  | ✅  | ✅      | Custom text for the Done button.                                                                        |
 
 ## `OpenCropperResult`
 
-| Key | Type | Description |
-|-----|------|-------------|
-| `path` | `string` | Path of the output image |
-| `size` | `number` | Size in bytes of the output image |
-| `width` | `number` | Width of the output image |
-| `height` | `number` | Height of the output image |
-| `mimeType` | `string` | MIME type of the output image |
-
+| Key        | Type     | Description                       |
+| ---------- | -------- | --------------------------------- |
+| `path`     | `string` | Path of the output image          |
+| `size`     | `number` | Size in bytes of the output image |
+| `width`    | `number` | Width of the output image         |
+| `height`   | `number` | Height of the output image        |
+| `mimeType` | `string` | MIME type of the output image     |
