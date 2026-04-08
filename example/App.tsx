@@ -181,7 +181,8 @@ const styles = {
   header: {
     fontSize: 30,
     marginHorizontal: 20,
-    marginVertical: 4,
+    marginTop: 40,
+    marginBottom: 8,
   },
   text: {
     marginHorizontal: 20,

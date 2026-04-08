@@ -13,10 +13,13 @@ For bare React Native projects, you must ensure that you have [installed and con
 ### Add the package to your npm dependencies
 
 ```bash
-npm install expo-image-crop-tool
+npm install @bsky.app/expo-image-crop-tool
 cd ios
 pod install
 ```
+
+> [!NOTE]
+> This package was previously published as `expo-image-crop-tool`, but is now called `@bsky.app/expo-image-crop-tool`.
 
 # Usage
 
@@ -69,11 +72,10 @@ Common opacity values:
 
 ## `OpenCropperResult`
 
-| Key | Type | Description |
-|-----|------|-------------|
-| `path` | `string` | Path of the output image |
-| `size` | `number` | Size in bytes of the output image |
-| `width` | `number` | Width of the output image |
-| `height` | `number` | Height of the output image |
-| `mimeType` | `string` | MIME type of the output image |
-
+| Key        | Type     | Description                       |
+| ---------- | -------- | --------------------------------- |
+| `path`     | `string` | Path of the output image          |
+| `size`     | `number` | Size in bytes of the output image |
+| `width`    | `number` | Width of the output image         |
+| `height`   | `number` | Height of the output image        |
+| `mimeType` | `string` | MIME type of the output image     |
