@@ -31,17 +31,44 @@ For basic examples, see `example/App.tsx`.
 
 ## `OpenCropperOptions`
 
-| Key                      | Type      | iOS | Android | Description                                                                                             |
-| ------------------------ | --------- | --- | ------- | ------------------------------------------------------------------------------------------------------- |
-| `imageUri`               | `string`  | ✅  | ✅      | A path to the image that you want to crop.                                                              |
-| `shape`                  | `string`  | ✅  | ✅      | The shape that you want the returned image to be (`'rectangle'` \| `'circle'`). Default is `rectangle`. |
-| `aspectRatio`            | `number`  | ✅  | ✅      | If you want to force a particular aspect ratio for the output image.                                    |
-| `format`                 | `string`  | ✅  | ✅      | The format of the output image (`'png'` \| `'jpeg'`). Default is `png`.                                 |
-| `compressImageQuality`   | `number`  | ✅  | ✅      | If outputting a JPEG image, the compression quality for the output image.                               |
-| `rotationEnabled`        | `boolean` | ✅  | ✅      | Whether or not to allow the user to rotate the image in 90 degree segments. Default is `true`.          |
-| `rotationControlEnabled` | `boolean` | ✅  |         | Whether or not to show the rotation control view. Default is `true`.                                    |
-| `cancelButtonText`       | `string`  | ✅  | ✅      | Custom text for the Cancel button.                                                                      |
-| `doneButtonText`         | `string`  | ✅  | ✅      | Custom text for the Done button.                                                                        |
+| Key | Type | iOS | Android | Description |
+|-----|------|-----|---------|-------------|
+| `imageUri` | `string` | ✅ | ✅ | A path to the image that you want to crop. |
+| `shape` | `string` | ✅ | ✅ | The shape that you want the returned image to be (`'rectangle'` \| `'circle'`). Default is `rectangle`. |
+| `aspectRatio` | `number` | ✅ | ✅ | If you want to force a particular aspect ratio for the output image. |
+| `format` | `string` | ✅ | ✅ | The format of the output image (`'png'` \| `'jpeg'`). Default is `png`. |
+| `compressImageQuality` | `number` | ✅ | ✅ | If outputting a JPEG image, the compression quality for the output image. |
+| `rotationEnabled` | `boolean` | ✅ | ✅ | Whether or not to allow the user to rotate the image in 90 degree segments. Default is `true`. |
+| `rotationControlEnabled` | `boolean` | ✅ |  | Whether or not to show the rotation control view. Default is `true`. |
+| `cancelButtonText` | `string` | ✅ | ✅ | Custom text for the Cancel button. |
+| `doneButtonText` | `string` | ✅ | ✅ | Custom text for the Done button. |
+| `toolbarBackgroundColor` | `string` | ✅ | ✅ | Background color for the toolbar (hex format, e.g. `#00ff00` or `#00ff0080` for transparency). |
+| `toolbarForegroundColor` | `string` | ✅ | ✅ | Color for toolbar buttons and text (hex format). |
+| `cropBackgroundColor` | `string` | ✅ | ✅ | Background color for the crop area. |
+| `viewControllerBackgroundColor` | `string` | ✅ |  | iOS only - Background color for the base view layer behind the crop overlay. |
+
+### Color Format
+
+All color properties accept hex color strings in the following formats:
+- 6-digit RGB: `#00ff00` (opaque green)
+- 8-digit RGBA: `#00ff0080` (50% transparent green)
+
+Common opacity values:
+- `FF` = 100% opaque
+- `CC` = 80%
+- `80` = 50%
+- `40` = 25%
+- `00` = 0% (fully transparent)
+
+### Platform Differences
+
+**iOS** uses the Mantis library which has separate layers:
+- `cropBackgroundColor` - Controls the semi-transparent overlay around the crop area
+- `viewControllerBackgroundColor` - Controls the base background layer behind everything
+
+**Android** uses the CanHub Cropper library which has a simpler architecture:
+- `cropBackgroundColor` - Controls the background color (the cropper view is transparent)
+- `viewControllerBackgroundColor` - Not used on Android (iOS-only)
 
 ## `OpenCropperResult`
 

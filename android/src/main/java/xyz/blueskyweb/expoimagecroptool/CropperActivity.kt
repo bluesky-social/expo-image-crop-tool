@@ -34,6 +34,33 @@ private fun Context.dpToPx(dp: Int): Int =
       resources.displayMetrics,
     ).toInt()
 
+/**
+ * Convert hex color string to Android color int.
+ * Handles iOS format (#RRGGBBAA), Android format (#AARRGGBB), and shorthand (#RGB/#RGBA).
+ * Returns null if the string is empty or invalid.
+ */
+private fun String.toAndroidColorInt(): Int? {
+  var hex = trim().removePrefix("#")
+  if (hex.isEmpty()) return null
+
+  // Expand shorthand formats: #RGB -> #RRGGBB, #RGBA -> #RRGGBBAA
+  if (hex.length == 3 || hex.length == 4) {
+    hex = hex.map { "$it$it" }.joinToString("")
+  }
+
+  // Convert iOS format (RRGGBBAA) to Android format (AARRGGBB)
+  if (hex.length == 8) {
+    hex = hex.substring(6, 8) + hex.substring(0, 6)
+  }
+
+  return try {
+    "#$hex".toColorInt()
+  } catch (e: IllegalArgumentException) {
+    Log.w("ExpoCropTool", "Invalid color format: '$this'")
+    null
+  }
+}
+
 class CropperActivity : AppCompatActivity() {
   private var cropView: CropImageView? = null
   private var options: OpenCropperOptions? = null
@@ -100,7 +127,17 @@ class CropperActivity : AppCompatActivity() {
 
     this.cropView = cropView
 
-    val root = FrameLayout(this).apply { setBackgroundColor(Color.BLACK) }
+    ViewCompat.setOnApplyWindowInsetsListener(cropView) { view, insets ->
+      val sysBars = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
+      view.setPadding(0, sysBars.top, 0, sysBars.bottom)
+      insets
+    }
+
+    val root = FrameLayout(this).apply {
+      // On Android, only cropBackgroundColor is used (viewControllerBackgroundColor is iOS-only)
+      val bgColor = options.cropBackgroundColor?.toAndroidColorInt() ?: Color.BLACK
+      setBackgroundColor(bgColor)
+    }
 
     val cropViewLayoutParams = FrameLayout.LayoutParams(
       MATCH_PARENT,
@@ -112,7 +149,10 @@ class CropperActivity : AppCompatActivity() {
     val bar =
       LinearLayout(this).apply {
         orientation = LinearLayout.HORIZONTAL
-        setBackgroundColor("#66000000".toColorInt())
+        // Apply toolbar background color or default to semi-transparent black
+        setBackgroundColor(
+          options.toolbarBackgroundColor?.toAndroidColorInt() ?: "#66000000".toColorInt()
+        )
         val dp16 = dpToPx(16)
         setPadding(0, dp16, 0, dp16)
         gravity = Gravity.CENTER_VERTICAL
@@ -121,7 +161,8 @@ class CropperActivity : AppCompatActivity() {
     val cancelBtn =
       AppCompatButton(this).apply {
         text = options.cancelButtonText ?: "CANCEL"
-        setTextColor(Color.WHITE)
+        // Apply foreground color or default to white
+        setTextColor(options.toolbarForegroundColor?.toAndroidColorInt() ?: Color.WHITE)
         setBackgroundColor(Color.TRANSPARENT) // Transparent background
         layoutParams =
           LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
@@ -147,8 +188,8 @@ class CropperActivity : AppCompatActivity() {
         // Set content description for accessibility
         contentDescription = "Reset"
 
-        // Make the icon white
-        setColorFilter(Color.WHITE)
+        // Apply foreground color or default to white
+        setColorFilter(options.toolbarForegroundColor?.toAndroidColorInt() ?: Color.WHITE)
 
         // Set a transparent background
         setBackgroundColor(Color.TRANSPARENT)
@@ -191,8 +232,8 @@ class CropperActivity : AppCompatActivity() {
           // Set content description for accessibility
           contentDescription = "Rotate"
 
-          // Make the icon white
-          setColorFilter(Color.WHITE)
+          // Apply foreground color or default to white
+          setColorFilter(options.toolbarForegroundColor?.toAndroidColorInt() ?: Color.WHITE)
 
           // Set a transparent background
           setBackgroundColor(Color.TRANSPARENT)
@@ -223,7 +264,8 @@ class CropperActivity : AppCompatActivity() {
     val doneBtn =
       AppCompatButton(this).apply {
         text = options.doneButtonText ?: "DONE"
-        setTextColor(Color.YELLOW)
+        // Apply foreground color or default to yellow
+        setTextColor(options.toolbarForegroundColor?.toAndroidColorInt() ?: Color.YELLOW)
         setBackgroundColor(Color.TRANSPARENT) // Transparent background
         layoutParams =
           LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {

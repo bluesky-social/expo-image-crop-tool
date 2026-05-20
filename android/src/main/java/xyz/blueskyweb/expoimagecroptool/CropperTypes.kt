@@ -13,6 +13,9 @@ class OpenCropperOptions(
   @Field var rotationEnabled: Boolean? = true,
   @Field var cancelButtonText: String? = null,
   @Field var doneButtonText: String? = null,
+  @Field var toolbarBackgroundColor: String? = null,
+  @Field var toolbarForegroundColor: String? = null,
+  @Field var cropBackgroundColor: String? = null,
 ) : Record {
   fun toBundle(): Bundle =
     Bundle().apply {
@@ -24,6 +27,9 @@ class OpenCropperOptions(
       putBoolean("rotationEnabled", rotationEnabled ?: true)
       putString("cancelButtonText", cancelButtonText)
       putString("doneButtonText", doneButtonText)
+      putString("toolbarBackgroundColor", toolbarBackgroundColor)
+      putString("toolbarForegroundColor", toolbarForegroundColor)
+      putString("cropBackgroundColor", cropBackgroundColor)
     }
 
   companion object {
@@ -37,6 +43,9 @@ class OpenCropperOptions(
         rotationEnabled = bundle.getBoolean("rotationEnabled", true),
         cancelButtonText = bundle.getString("cancelButtonText"),
         doneButtonText = bundle.getString("doneButtonText"),
+        toolbarBackgroundColor = bundle.getString("toolbarBackgroundColor"),
+        toolbarForegroundColor = bundle.getString("toolbarForegroundColor"),
+        cropBackgroundColor = bundle.getString("cropBackgroundColor"),
       )
   }
 }
