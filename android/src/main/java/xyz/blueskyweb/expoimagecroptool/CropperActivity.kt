@@ -285,12 +285,22 @@ class CropperActivity : AppCompatActivity() {
         }
 
     val bmap =
-      cropView?.getCroppedImage()
-        ?: run {
-          setResult(CropperError.GetData.getResultCode(), null)
-          finish()
-          return
-        }
+      try {
+        cropView?.getCroppedImage()
+      } catch (e: Exception) {
+        // getCroppedImage re-reads the full-resolution region from the source
+        // content:// URI, which can fail even though the image displayed fine
+        // (revoked permission grant, the file was deleted or moved while the
+        // cropper was open, or a provider that rejects the re-read). That
+        // throws CropException.FailedToLoadBitmap. Fail the crop gracefully
+        // instead of letting it crash the whole app.
+        Log.e("ExpoCropTool", "Error loading image for crop", e)
+        null
+      } ?: run {
+        setResult(CropperError.GetData.getResultCode(), null)
+        finish()
+        return
+      }
 
     try {
       val format = options.format ?: "png"
