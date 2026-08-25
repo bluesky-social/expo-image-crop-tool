@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -25,6 +26,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import com.canhub.cropper.CropImageView
 import java.io.File
+import java.io.FileOutputStream
 
 private fun Context.dpToPx(dp: Int): Int =
   TypedValue
@@ -34,11 +36,14 @@ private fun Context.dpToPx(dp: Int): Int =
       resources.displayMetrics,
     ).toInt()
 
+private const val SOURCE_COPY_MAX_AGE_MS = 24L * 60 * 60 * 1000
+
 class CropperActivity : AppCompatActivity() {
   private var cropView: CropImageView? = null
   private var options: OpenCropperOptions? = null
   private var resetBtn: AppCompatImageButton? = null
   private var rotationCount: Int = 0
+  private var durableSource: File? = null
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -57,7 +62,7 @@ class CropperActivity : AppCompatActivity() {
 
     val cropView =
       CropImageView(this).apply {
-        options.imageUri?.let { setImageUriAsync(it.toUri()) }
+        options.imageUri?.let { setImageUriAsync(durableSourceUri(it.toUri())) }
           ?: run {
             setResult(CropperError.OpenImage.getResultCode(), null)
             finish()
@@ -275,6 +280,12 @@ class CropperActivity : AppCompatActivity() {
     }
   }
 
+  override fun onDestroy() {
+    durableSource?.delete()
+    durableSource = null
+    super.onDestroy()
+  }
+
   fun onDone() {
     val options =
       this.options
@@ -349,5 +360,38 @@ class CropperActivity : AppCompatActivity() {
       setResult(CropperError.WriteData.getResultCode(), null)
       finish()
     }
+  }
+
+  // Only a downsampled preview is loaded up front; the full-resolution region is re-read from
+  // the source when the crop is confirmed, so the source has to outlive the whole session.
+  // Callers usually pass a file in cacheDir (expo-image-picker writes there), and the OS trims
+  // cacheDir under storage pressure, so keep a copy in filesDir, which is never trimmed. Read
+  // through the resolver because the public API accepts any URI, content:// included.
+  private fun durableSourceUri(source: Uri): Uri {
+    return try {
+      val dir = File(filesDir, "crop-sources").apply { mkdirs() }
+      reapOrphanedSources(dir)
+      // launchMode is the default, so two crop sessions can be alive at once and the name of
+      // each copy has to be unique.
+      val copy = File(dir, "source-${System.nanoTime()}")
+      contentResolver.openInputStream(source)?.use { input ->
+        FileOutputStream(copy).use { output -> input.copyTo(output) }
+      } ?: return source
+      durableSource = copy
+      copy.toUri()
+    } catch (e: Exception) {
+      // A failed copy must not block the crop; the original URI still works when it is readable.
+      Log.w("ExpoCropTool", "Could not copy crop source to durable storage", e)
+      source
+    }
+  }
+
+  // onDestroy does not run when the OS kills the process, which is the low-memory case these
+  // copies exist for, and filesDir is never reclaimed, so orphans would otherwise accumulate
+  // forever. Deleting the whole directory would take out a concurrent session's live source;
+  // nothing still in flight is a day old.
+  private fun reapOrphanedSources(dir: File) {
+    val cutoff = System.currentTimeMillis() - SOURCE_COPY_MAX_AGE_MS
+    dir.listFiles()?.forEach { if (it.lastModified() < cutoff) it.delete() }
   }
 }
