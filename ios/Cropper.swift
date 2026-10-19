@@ -78,22 +78,27 @@ class Cropper: NSObject, CropViewControllerDelegate {
       viewConfig.showAttachedRotationControlView = false
     }
 
-    // Disable rotation control view if rotationEnabled is false
-    if options.rotationEnabled == false {
-      // Create a toolbar config with rotation buttons removed
-      var toolbarConfig = Mantis.CropToolbarConfig()
+    var toolbarConfig = Mantis.CropToolbarConfig()
+    var buttonOptions = toolbarConfig.toolbarButtonOptions
 
-      // Get the default options and remove rotation options
-      var buttonOptions = toolbarConfig.toolbarButtonOptions
+    // Remove rotation buttons if rotationEnabled is false
+    if options.rotationEnabled == false {
       buttonOptions.remove(.clockwiseRotate)
       buttonOptions.remove(.counterclockwiseRotate)
-
-      // Set the modified options back
-      toolbarConfig.toolbarButtonOptions = buttonOptions
-
-      // Assign the toolbar config to the main config
-      config.cropToolbarConfig = toolbarConfig
     }
+
+    // Neither button has anything to do once the ratio is locked: there is no ratio list to
+    // present, and no transform to reset. Leaving `.reset` in is actively wrong on iOS 26, where
+    // Mantis wraps toolbar buttons in a glass pill: it creates the button and hides it right away
+    // (`resetButton?.isHidden = true`) without running its own `updateToolGroupVisibilityIfNeeded`
+    // guard, so the pill survives around a hidden button and shows up as an empty bubble.
+    if options.aspectRatio != nil || options.shape == "circle" {
+      buttonOptions.remove(.reset)
+      buttonOptions.remove(.ratio)
+    }
+
+    toolbarConfig.toolbarButtonOptions = buttonOptions
+    config.cropToolbarConfig = toolbarConfig
 
     if options.shape == "circle" {
       config.ratioOptions = []
